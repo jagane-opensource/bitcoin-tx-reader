@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.FileInputStream;
 
 import org.zeromq.ZMQ;
 import org.zeromq.ZContext;
@@ -31,21 +32,33 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 public class BitcoinTxReader {
   public static void main(String args[]) {
 
-    if (args.length != 2) {
+    if (args.length != 2 && args.length != 1) {
       System.err.println("Usage: BitcoinTxReader s3-bucketname objectname");
+      System.err.println("Usage: BitcoinTxReader localfilename");
       System.exit(-1);
     }
-    String bucketname = args[0];
-    String objectname = args[1];
-
-    AmazonS3 s3client = AmazonS3ClientBuilder.defaultClient();
-
     byte[] contents = null;
-    try {
-      contents = readFromBucket(s3client, bucketname, objectname);
-    } catch (IOException ioe) {
-      System.err.println("Error. Caught " + ioe);
-      System.exit(-1);
+    if (args.length == 2) {
+      String bucketname = args[0];
+      String objectname = args[1];
+
+      AmazonS3 s3client = AmazonS3ClientBuilder.defaultClient();
+
+      try {
+        contents = readFromBucket(s3client, bucketname, objectname);
+      } catch (IOException ioe) {
+        System.err.println("Error. Caught " + ioe);
+        System.exit(-1);
+      }
+    } else {
+      try {
+        FileInputStream fis = new FileInputStream(args[0]);
+        contents = new byte[4096];
+        int bytes = fis.read(contents, 0, 4096);
+      } catch (Exception ex) {
+        System.err.println("Caught " + ex);
+        contents = null;
+      }
     }
     if (contents != null) {
       NetworkParameters params = MainNetParams.get();
