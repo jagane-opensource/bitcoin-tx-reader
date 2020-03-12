@@ -32,7 +32,7 @@ public class BitcoinTxReader {
   public static void main(String args[]) {
 
     if (args.length != 2) {
-      System.err.println("Usage: Listener s3-bucketname objectname");
+      System.err.println("Usage: BitcoinTxReader s3-bucketname objectname");
       System.exit(-1);
     }
     String bucketname = args[0];
